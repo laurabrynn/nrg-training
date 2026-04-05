@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"$PATH:/usr/local/bin:/opt/homebrew/bin\")",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/laura-brynnneuhoff/.volta/**)",
+      "Bash(command -v node)",
+      "Bash(claude mcp:*)",
+      "Read(//Users/laura-brynnneuhoff/.claude/**)",
+      "Bash(claude --version)",
+      "Read(//Users/laura-brynnneuhoff/.local/share/claude/versions/**)",
+      "Read(//Users/laura-brynnneuhoff/**)",
+      "Bash(npm --version)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(xargs kill:*)",
+      "Bash(pandoc \"/Users/laura-brynnneuhoff/Downloads/JUNEBUG STEPS OF SERVICE.docx\" -o /tmp/steps-of-service.md)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(cp \"/Users/laura-brynnneuhoff/Downloads/JUNEBUG STEPS OF SERVICE.docx\" steps.docx)",
+      "Bash(unzip -o steps.docx word/document.xml -d steps_unpacked)",
+      "Bash(cp '/Users/laura-brynnneuhoff/Downloads/GM Manager Training Workbook - Master.xlsx' gm.xlsx)",
+      "Bash(unzip -o gm.xlsx xl/sharedStrings.xml xl/worksheets/sheet1.xml -d gm_unpacked)",
+      "Bash(grep -v '^$')",
+      "Bash(npm install:*)",
+      "Bash(/usr/local/bin/npm install:*)",
+      "Bash(export PATH=/usr/local/bin:$PATH)",
+      "Bash(python -m markitdown \"/Users/laura-brynnneuhoff/Downloads/Marketing & Design/Neighborly-Pitch-Deck.pptx\")",
+      "Bash(npx create-next-app@latest neighborly --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Read(//usr/local/lib/node_modules/npm/bin/**)",
+      "Bash(/usr/local/bin/node -e \"console.log\\(process.version\\)\")",
+      "Bash(/usr/local/bin/npx create-next-app@latest neighborly --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(/usr/local/bin/npm --version)",
+      "Bash(npx --version)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

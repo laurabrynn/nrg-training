@@ -1,0 +1,50 @@
+{
+  "node": {
+    "78d61129a90eedd23eddceed3da33906570e592ea2": {
+      "workers": {
+        "app/manager/gm-training/day/[day]/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Flaura-brynnneuhoff%2FDesktop%2Fnrg-training%2Fsrc%2Fapp%2Factions%2Fquiz.ts%22%2C%5B%7B%22id%22%3A%2278d61129a90eedd23eddceed3da33906570e592ea2%22%2C%22exportedName%22%3A%22saveQuizAttempt%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/manager/gm-training/day/[day]/page": "action-browser"
+      }
+    },
+    "4088c71750ffe8b0d1b03b7264191df50aff764a69": {
+      "workers": {
+        "app/admin/resources/manage/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Flaura-brynnneuhoff%2FDesktop%2Fnrg-training%2Fsrc%2Fapp%2Fadmin%2Fresources%2Fmanage%2Factions.ts%22%2C%5B%7B%22id%22%3A%224088c71750ffe8b0d1b03b7264191df50aff764a69%22%2C%22exportedName%22%3A%22deleteDocument%22%7D%2C%7B%22id%22%3A%22408edabd1d68dcc473b7262fab190089b7fe3d5a05%22%2C%22exportedName%22%3A%22createDocument%22%7D%2C%7B%22id%22%3A%22606f954d9c873fa07773e78a275b873b60eb6eb0d8%22%2C%22exportedName%22%3A%22updateDocument%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/admin/resources/manage/page": "action-browser"
+      }
+    },
+    "408edabd1d68dcc473b7262fab190089b7fe3d5a05": {
+      "workers": {
+        "app/admin/resources/manage/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Flaura-brynnneuhoff%2FDesktop%2Fnrg-training%2Fsrc%2Fapp%2Fadmin%2Fresources%2Fmanage%2Factions.ts%22%2C%5B%7B%22id%22%3A%224088c71750ffe8b0d1b03b7264191df50aff764a69%22%2C%22exportedName%22%3A%22deleteDocument%22%7D%2C%7B%22id%22%3A%22408edabd1d68dcc473b7262fab190089b7fe3d5a05%22%2C%22exportedName%22%3A%22createDocument%22%7D%2C%7B%22id%22%3A%22606f954d9c873fa07773e78a275b873b60eb6eb0d8%22%2C%22exportedName%22%3A%22updateDocument%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/admin/resources/manage/page": "action-browser"
+      }
+    },
+    "606f954d9c873fa07773e78a275b873b60eb6eb0d8": {
+      "workers": {
+        "app/admin/resources/manage/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Flaura-brynnneuhoff%2FDesktop%2Fnrg-training%2Fsrc%2Fapp%2Fadmin%2Fresources%2Fmanage%2Factions.ts%22%2C%5B%7B%22id%22%3A%224088c71750ffe8b0d1b03b7264191df50aff764a69%22%2C%22exportedName%22%3A%22deleteDocument%22%7D%2C%7B%22id%22%3A%22408edabd1d68dcc473b7262fab190089b7fe3d5a05%22%2C%22exportedName%22%3A%22createDocument%22%7D%2C%7B%22id%22%3A%22606f954d9c873fa07773e78a275b873b60eb6eb0d8%22%2C%22exportedName%22%3A%22updateDocument%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/admin/resources/manage/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "7uvsUFTgrXb+Cixz8TNnI1MjkV6nvrqiaxkaOii6/vg="
+}
