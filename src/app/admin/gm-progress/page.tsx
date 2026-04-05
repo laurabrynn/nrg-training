@@ -1,6 +1,8 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { gmModules } from "@/lib/modules/gm-training";
+import { getModulesFromDB } from "@/lib/modules/db";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = { title: "GM Progress | NRG Training" };
 
@@ -39,6 +41,7 @@ export default async function GMProgressPage() {
     if (a.property) propertyByUser.set(a.user_id, a.property as unknown as { name: string; state: string });
   }
 
+  const gmModules = await getModulesFromDB();
   const stateLabel: Record<string, string> = { dc: "DC", va: "VA", md: "MD", la: "NOLA" };
   const totalDays = gmModules.length;
 

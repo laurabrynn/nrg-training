@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { gmModules } from "@/lib/modules/gm-training";
+import { getModulesFromDB } from "@/lib/modules/db";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "GM Training Program | NRG Training" };
 
 export default async function GMTrainingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/");
+
+  const gmModules = await getModulesFromDB();
 
   const { data: progressRows } = await supabase
     .from("module_progress")
@@ -25,7 +28,6 @@ export default async function GMTrainingPage() {
     .select("module_id, score")
     .eq("user_id", user.id);
 
-  // Best score per module
   const quizScoreMap = new Map<string, number>();
   for (const q of quizRows ?? []) {
     const prev = quizScoreMap.get(q.module_id) ?? -1;
@@ -67,7 +69,7 @@ export default async function GMTrainingPage() {
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold">
-              {Math.round((completedDays / totalDays) * 100)}<span className="text-white/50 text-base">%</span>
+              {Math.round((completedDays / Math.max(totalDays, 1)) * 100)}<span className="text-white/50 text-base">%</span>
             </p>
             <p className="text-xs text-white/70 mt-0.5">Complete</p>
           </div>
@@ -75,14 +77,14 @@ export default async function GMTrainingPage() {
         <div className="h-2 bg-white/20 rounded-full overflow-hidden">
           <div
             className="h-full bg-nrg-gold rounded-full transition-all"
-            style={{ width: `${Math.round((completedDays / totalDays) * 100)}%` }}
+            style={{ width: `${Math.round((completedDays / Math.max(totalDays, 1)) * 100)}%` }}
           />
         </div>
       </div>
 
       {/* Day cards */}
       <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">
-        10-Day Program
+        {totalDays}-Day Program
       </h2>
       <div className="space-y-2">
         {gmModules.map((mod) => {
@@ -91,7 +93,7 @@ export default async function GMTrainingPage() {
           const isSigned = !!prog?.signed_off_at;
           const completedTasks = taskMap.get(mod.id) ?? 0;
           const totalTasks = mod.tasks.length;
-          const pct = Math.round((completedTasks / totalTasks) * 100);
+          const pct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
           const quizScore = quizScoreMap.get(mod.id) ?? null;
 
           return (
@@ -100,7 +102,6 @@ export default async function GMTrainingPage() {
               href={`/manager/gm-training/day/${mod.day}`}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition group"
             >
-              {/* Status circle */}
               <span className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition ${
                 isComplete ? "bg-nrg-green text-white" : "bg-gray-100 text-gray-400 group-hover:bg-nrg-green/10 group-hover:text-nrg-green"
               }`}>

@@ -28,6 +28,7 @@ const corporateNav: NavItem[] = [
   { label: "Home", href: "/admin" },
   { label: "GM Progress", href: "/admin/gm-progress" },
   { label: "Staff", href: "/admin/staff" },
+  { label: "Modules", href: "/admin/modules" },
   { label: "Resources", href: "/admin/resources" },
   { label: "Ask NRG", href: "/admin/chat" },
 ];
