@@ -67,3 +67,42 @@ export async function deleteDocument(id: string) {
   revalidatePath("/admin/resources/manage");
   revalidatePath("/manager/resources");
 }
+
+export async function uploadPdf(formData: FormData) {
+  await assertAdmin();
+  const admin = createAdminClient();
+
+  const file = formData.get("file") as File;
+  const title = formData.get("title") as string;
+  const category = formData.get("category") as string;
+  const category_label = formData.get("category_label") as string;
+  const states = formData.getAll("applicable_states") as string[];
+
+  if (!file || file.size === 0) throw new Error("No file provided");
+
+  const ext = file.name.split(".").pop();
+  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const bytes = await file.arrayBuffer();
+
+  const { error: uploadError } = await admin.storage
+    .from("documents")
+    .upload(path, bytes, { contentType: file.type || "application/pdf" });
+
+  if (uploadError) throw uploadError;
+
+  const { data: { publicUrl } } = admin.storage.from("documents").getPublicUrl(path);
+
+  await admin.from("knowledge_documents").insert({
+    title,
+    content: "",
+    category,
+    category_label,
+    applicable_states: states.length > 0 ? states : ["dc", "va", "md", "la"],
+    source: "pdf",
+    file_url: publicUrl,
+  });
+
+  revalidatePath("/admin/resources");
+  revalidatePath("/admin/resources/manage");
+  revalidatePath("/manager/resources");
+}

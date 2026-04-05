@@ -10,10 +10,10 @@ async function assertAdmin() {
   if (role !== "corporate" && role !== "do") throw new Error("Unauthorized");
 }
 
-export async function updateModule(id: string, title: string, focus: string) {
+export async function updateModule(id: string, title: string, focus: string, videoUrl: string) {
   await assertAdmin();
   const admin = createAdminClient();
-  await admin.from("gm_modules").update({ title, focus }).eq("id", id);
+  await admin.from("gm_modules").update({ title, focus, video_url: videoUrl || null }).eq("id", id);
   revalidatePath("/admin/modules");
   revalidatePath("/manager/gm-training");
 }

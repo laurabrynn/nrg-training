@@ -15,6 +15,7 @@ export interface GmModule {
   id: string;
   title: string;
   focus: string;
+  video_url?: string | null;
   tasks: ModuleTask[];
   quiz: QuizQuestion[];
 }

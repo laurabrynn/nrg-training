@@ -20,7 +20,7 @@ export default async function ManagerResourcesPage() {
 
   const { data: documents } = await supabase
     .from("knowledge_documents")
-    .select("id, title, content, category, category_label, applicable_states")
+    .select("id, title, content, category, category_label, applicable_states, file_url")
     .order("category")
     .order("title");
 

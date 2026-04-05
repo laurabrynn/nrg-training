@@ -20,7 +20,7 @@ type Question = {
   explanation: string;
   sort_order: number;
 };
-type Mod = { id: string; day: number; title: string; focus: string };
+type Mod = { id: string; day: number; title: string; focus: string; video_url: string | null };
 
 export default function ModuleEditor({
   mod,
@@ -37,6 +37,7 @@ export default function ModuleEditor({
   const [editingHeader, setEditingHeader] = useState(false);
   const [headerTitle, setHeaderTitle] = useState(mod.title);
   const [headerFocus, setHeaderFocus] = useState(mod.focus);
+  const [headerVideo, setHeaderVideo] = useState(mod.video_url ?? "");
 
   // Task state
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -106,12 +107,21 @@ export default function ModuleEditor({
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none"
               />
             </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Video URL (YouTube, Vimeo, or direct link)</label>
+              <input
+                value={headerVideo}
+                onChange={(e) => setHeaderVideo(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </div>
             <div className="flex gap-2">
               <button
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
-                    await updateModule(mod.id, headerTitle, headerFocus);
+                    await updateModule(mod.id, headerTitle, headerFocus, headerVideo);
                     setEditingHeader(false);
                   });
                 }}
@@ -120,7 +130,7 @@ export default function ModuleEditor({
                 Save
               </button>
               <button
-                onClick={() => { setHeaderTitle(mod.title); setHeaderFocus(mod.focus); setEditingHeader(false); }}
+                onClick={() => { setHeaderTitle(mod.title); setHeaderFocus(mod.focus); setHeaderVideo(mod.video_url ?? ""); setEditingHeader(false); }}
                 className="text-xs text-gray-400 hover:text-gray-600 px-3 py-2"
               >
                 Cancel
@@ -131,6 +141,9 @@ export default function ModuleEditor({
           <div>
             <p className="font-medium text-nrg-charcoal">Day {mod.day}: {mod.title}</p>
             <p className="text-sm text-gray-500 mt-1">{mod.focus}</p>
+            {mod.video_url && (
+              <p className="text-xs text-nrg-green mt-1 truncate">Video: {mod.video_url}</p>
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import ManageClient, { AddButton } from "./ManageClient";
+import ManageClient, { AddButton, UploadPdfButton } from "./ManageClient";
 
 export const metadata = { title: "Manage Resources | NRG Training" };
 
@@ -9,7 +9,7 @@ export default async function ManageResourcesPage() {
 
   const { data: documents } = await supabase
     .from("knowledge_documents")
-    .select("id, title, content, category, category_label, applicable_states, source")
+    .select("id, title, content, category, category_label, applicable_states, source, file_url")
     .order("category_label")
     .order("title");
 
@@ -25,7 +25,10 @@ export default async function ManageResourcesPage() {
           <h1 className="text-2xl font-bold text-nrg-charcoal">Manage Documents</h1>
           <p className="text-gray-500 text-sm mt-1">{documents?.length ?? 0} documents in the knowledge base.</p>
         </div>
-        <AddButton />
+        <div className="flex gap-2">
+          <UploadPdfButton />
+          <AddButton />
+        </div>
       </div>
       <ManageClient documents={documents ?? []} />
     </div>

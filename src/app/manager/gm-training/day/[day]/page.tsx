@@ -9,6 +9,16 @@ import Quiz from "@/components/modules/Quiz";
 
 export const dynamic = "force-dynamic";
 
+function toEmbedUrl(url: string): string {
+  // YouTube: watch?v=ID or youtu.be/ID
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  // Vimeo: vimeo.com/ID
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  return url;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ day: string }> }) {
   const { day } = await params;
   const mod = await getModuleFromDB(Number(day));
@@ -91,6 +101,22 @@ export default async function ModulePage({ params }: { params: Promise<{ day: st
           </div>
         )}
       </div>
+
+      {mod.video_url && (
+        <section className="mb-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+            Video
+          </h2>
+          <div className="rounded-2xl overflow-hidden aspect-video bg-black">
+            <iframe
+              src={toEmbedUrl(mod.video_url)}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </section>
+      )}
 
       <section className="mb-6">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createDocument, updateDocument, deleteDocument } from "./actions";
+import { createDocument, updateDocument, deleteDocument, uploadPdf } from "./actions";
 
 interface Doc {
   id: string;
@@ -11,6 +11,7 @@ interface Doc {
   category_label: string;
   applicable_states: string[];
   source: string;
+  file_url?: string | null;
 }
 
 const CATEGORIES = [
@@ -139,6 +140,107 @@ function DocForm({
   );
 }
 
+function UploadPdfButton() {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [category, setCategory] = useState("general");
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      await uploadPdf(formData);
+      setOpen(false);
+    });
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="border border-nrg-green text-nrg-green font-medium text-sm rounded-xl px-4 py-2.5 hover:bg-nrg-green/5 transition"
+      >
+        + Upload PDF
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
+          <div className="absolute inset-0 bg-black/20" onClick={() => setOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+            <h2 className="font-semibold text-nrg-charcoal text-lg mb-5">Upload PDF</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 block">Title</label>
+                <input
+                  name="title"
+                  required
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-nrg-charcoal focus:outline-none focus:ring-2 focus:ring-nrg-green/30 focus:border-nrg-green"
+                  placeholder="Document title"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 block">PDF File</label>
+                <input
+                  name="file"
+                  type="file"
+                  accept=".pdf"
+                  required
+                  className="w-full text-sm text-nrg-charcoal file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-nrg-green/10 file:text-nrg-green hover:file:bg-nrg-green/20"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 block">Category</label>
+                <select
+                  name="category"
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    const opt = CATEGORIES.find((c) => c.value === e.target.value);
+                    const labelInput = e.target.form?.querySelector<HTMLInputElement>('[name="category_label"]');
+                    if (labelInput && opt) labelInput.value = opt.label;
+                  }}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-nrg-charcoal focus:outline-none focus:ring-2 focus:ring-nrg-green/30 focus:border-nrg-green"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                <input type="hidden" name="category_label" defaultValue="General" />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 block">Applies to</label>
+                <div className="flex gap-3">
+                  {STATE_OPTIONS.map((s) => (
+                    <label key={s.value} className="flex items-center gap-1.5 text-sm text-nrg-charcoal cursor-pointer">
+                      <input type="checkbox" name="applicable_states" value={s.value} defaultChecked className="accent-nrg-green" />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-nrg-green text-white font-medium text-sm rounded-xl px-5 py-2.5 hover:bg-nrg-green/90 transition disabled:opacity-50"
+                >
+                  {isPending ? "Uploading..." : "Upload"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="border border-gray-200 text-nrg-charcoal font-medium text-sm rounded-xl px-5 py-2.5 hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function AddButton() {
   const [open, setOpen] = useState(false);
 
@@ -230,7 +332,16 @@ export default function ManageClient({ documents }: { documents: Doc[] }) {
                 </td>
                 <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{doc.category_label}</td>
                 <td className="px-5 py-3 hidden md:table-cell">
-                  {doc.content ? (
+                  {doc.file_url ? (
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-nrg-green font-medium hover:underline"
+                    >
+                      PDF
+                    </a>
+                  ) : doc.content ? (
                     <span className="text-xs text-gray-400 truncate block max-w-xs">
                       {doc.content.slice(0, 80)}...
                     </span>
@@ -312,4 +423,4 @@ export default function ManageClient({ documents }: { documents: Doc[] }) {
   );
 }
 
-export { AddButton };
+export { AddButton, UploadPdfButton };

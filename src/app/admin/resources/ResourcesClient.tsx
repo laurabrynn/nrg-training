@@ -9,6 +9,7 @@ interface Doc {
   category: string;
   category_label: string;
   applicable_states: string[];
+  file_url?: string | null;
 }
 
 interface Group {
@@ -169,15 +170,25 @@ export default function ResourcesClient({ groups }: Props) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-5">
+              {openDoc.file_url && (
+                <a
+                  href={openDoc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-nrg-green/10 text-nrg-green font-medium text-sm rounded-xl px-4 py-2.5 hover:bg-nrg-green/20 transition mb-4"
+                >
+                  View PDF
+                </a>
+              )}
               {openDoc.content ? (
                 <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
                   {openDoc.content}
                 </div>
-              ) : (
+              ) : !openDoc.file_url ? (
                 <p className="text-sm text-gray-400 italic">
                   This resource references an attached document. Check the NRG Playbook on Trello for the full content.
                 </p>
-              )}
+              ) : null}
             </div>
             {openDoc.applicable_states?.length < 4 && (
               <div className="px-6 py-3 border-t border-gray-100 flex gap-1.5">
