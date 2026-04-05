@@ -36,7 +36,7 @@ export default async function GMProgressPage() {
 
   const propertyByUser = new Map<string, { name: string; state: string }>();
   for (const a of assignments ?? []) {
-    if (a.property) propertyByUser.set(a.user_id, a.property as { name: string; state: string });
+    if (a.property) propertyByUser.set(a.user_id, a.property as unknown as { name: string; state: string });
   }
 
   const stateLabel: Record<string, string> = { dc: "DC", va: "VA", md: "MD", la: "NOLA" };
