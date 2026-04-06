@@ -22,6 +22,7 @@ const managerNav: NavItem[] = [
   { label: "Resources", href: "/manager/resources" },
   { label: "Ask NRG", href: "/manager/chat" },
   { label: "Staff", href: "/manager/staff" },
+  { label: "My Profile", href: "/manager/profile" },
 ];
 
 const corporateNav: NavItem[] = [
@@ -30,6 +31,7 @@ const corporateNav: NavItem[] = [
   { label: "Staff", href: "/admin/staff" },
   { label: "Modules", href: "/admin/modules" },
   { label: "Resources", href: "/admin/resources" },
+  { label: "Concepts", href: "/admin/concepts" },
   { label: "Ask NRG", href: "/admin/chat" },
 ];
 
