@@ -7,11 +7,14 @@ export const metadata = { title: "Manage Resources | NRG Training" };
 export default async function ManageResourcesPage() {
   const supabase = createAdminClient();
 
-  const { data: documents } = await supabase
-    .from("knowledge_documents")
-    .select("id, title, content, category, category_label, applicable_states, source, file_url")
-    .order("category_label")
-    .order("title");
+  const [{ data: documents }, { data: concepts }] = await Promise.all([
+    supabase
+      .from("knowledge_documents")
+      .select("id, title, content, category, category_label, applicable_states, source, file_url")
+      .order("category_label")
+      .order("title"),
+    supabase.from("concepts").select("id, name, slug, state").order("state").order("name"),
+  ]);
 
   return (
     <div>
@@ -26,11 +29,11 @@ export default async function ManageResourcesPage() {
           <p className="text-gray-500 text-sm mt-1">{documents?.length ?? 0} documents in the knowledge base.</p>
         </div>
         <div className="flex gap-2">
-          <UploadPdfButton />
-          <AddButton />
+          <UploadPdfButton concepts={concepts ?? []} />
+          <AddButton concepts={concepts ?? []} />
         </div>
       </div>
-      <ManageClient documents={documents ?? []} />
+      <ManageClient documents={documents ?? []} concepts={concepts ?? []} />
     </div>
   );
 }

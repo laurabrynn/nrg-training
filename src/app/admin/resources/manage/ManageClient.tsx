@@ -14,7 +14,14 @@ interface Doc {
   file_url?: string | null;
 }
 
-const CATEGORIES = [
+interface Concept {
+  id: string;
+  name: string;
+  slug: string;
+  state: string;
+}
+
+const STANDARD_CATEGORIES = [
   { value: "start-here", label: "👋 START HERE!" },
   { value: "manager-responsibilities", label: "Manager Responsibilities + Procedures" },
   { value: "accounting", label: "Accounting Manual" },
@@ -37,15 +44,24 @@ const STATE_OPTIONS = [
 
 function DocForm({
   doc,
+  concepts,
   onSave,
   onCancel,
 }: {
   doc?: Doc;
+  concepts: Concept[];
   onSave: (formData: FormData) => void;
   onCancel: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const defaultStates = doc?.applicable_states ?? ["dc", "va", "md", "la"];
+  const byState = concepts.reduce<Record<string, Concept[]>>((acc, c) => {
+    const s = c.state ?? "other";
+    if (!acc[s]) acc[s] = [];
+    acc[s].push(c);
+    return acc;
+  }, {});
+  const STATE_LABELS: Record<string, string> = { dc: "DC", va: "VA", md: "MD", la: "NOLA", other: "Other" };
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,14 +89,27 @@ function DocForm({
           required
           defaultValue={doc?.category ?? "general"}
           onChange={(e) => {
-            const opt = CATEGORIES.find((c) => c.value === e.target.value);
+            const stdOpt = STANDARD_CATEGORIES.find((c) => c.value === e.target.value);
+            const propOpt = concepts.find((c) => `property-${c.slug}` === e.target.value);
             const labelInput = e.target.form?.querySelector<HTMLInputElement>('[name="category_label"]');
-            if (labelInput && opt) labelInput.value = opt.label;
+            if (labelInput) {
+              if (stdOpt) labelInput.value = stdOpt.label;
+              else if (propOpt) labelInput.value = propOpt.name;
+            }
           }}
           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-nrg-charcoal focus:outline-none focus:ring-2 focus:ring-nrg-green/30 focus:border-nrg-green"
         >
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
+          <optgroup label="General Categories">
+            {STANDARD_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </optgroup>
+          {Object.entries(byState).map(([state, cs]) => (
+            <optgroup key={state} label={`Restaurant-Specific — ${STATE_LABELS[state] ?? state}`}>
+              {cs.map((c) => (
+                <option key={c.id} value={`property-${c.slug}`}>{c.name}</option>
+              ))}
+            </optgroup>
           ))}
         </select>
         <input
@@ -115,9 +144,24 @@ function DocForm({
           rows={10}
           defaultValue={doc?.content}
           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-nrg-charcoal focus:outline-none focus:ring-2 focus:ring-nrg-green/30 focus:border-nrg-green resize-y font-mono"
-          placeholder="Paste the full content of this document here. The more detail, the better the chatbot can answer questions about it."
+          placeholder="Paste the full content of this document here. Use [text](url) for clickable links. The more detail, the better the chatbot can answer questions about it."
         />
-        <p className="text-xs text-gray-400 mt-1">Markdown supported. Paste full policy text, SOP steps, contact lists, etc.</p>
+        <p className="text-xs text-gray-400 mt-1">Markdown supported — **bold**, - bullets, [link text](https://...). Paste full policy text, SOP steps, contact lists, etc.</p>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1 block">PDF Attachment (optional)</label>
+        <input
+          name="pdf_file"
+          type="file"
+          accept=".pdf"
+          className="w-full text-sm text-nrg-charcoal file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-nrg-green/10 file:text-nrg-green hover:file:bg-nrg-green/20"
+        />
+        {doc?.file_url && (
+          <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline mt-1 inline-block">
+            Current PDF attached ↗ (upload a new file to replace)
+          </a>
+        )}
       </div>
 
       <div className="flex gap-2 pt-2">
@@ -140,7 +184,7 @@ function DocForm({
   );
 }
 
-function UploadPdfButton() {
+function UploadPdfButton({ concepts }: { concepts: Concept[] }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [category, setCategory] = useState("general");
@@ -194,15 +238,28 @@ function UploadPdfButton() {
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value);
-                    const opt = CATEGORIES.find((c) => c.value === e.target.value);
+                    const stdOpt = STANDARD_CATEGORIES.find((c) => c.value === e.target.value);
+                    const propOpt = concepts.find((c) => `property-${c.slug}` === e.target.value);
                     const labelInput = e.target.form?.querySelector<HTMLInputElement>('[name="category_label"]');
-                    if (labelInput && opt) labelInput.value = opt.label;
+                    if (labelInput) {
+                      if (stdOpt) labelInput.value = stdOpt.label;
+                      else if (propOpt) labelInput.value = propOpt.name;
+                    }
                   }}
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-nrg-charcoal focus:outline-none focus:ring-2 focus:ring-nrg-green/30 focus:border-nrg-green"
                 >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>{c.label}</option>
-                  ))}
+                  <optgroup label="General Categories">
+                    {STANDARD_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </optgroup>
+                  {concepts.length > 0 && (
+                    <optgroup label="Restaurant-Specific">
+                      {concepts.map((c) => (
+                        <option key={c.id} value={`property-${c.slug}`}>{c.name}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
                 <input type="hidden" name="category_label" defaultValue="General" />
               </div>
@@ -241,7 +298,7 @@ function UploadPdfButton() {
   );
 }
 
-function AddButton() {
+function AddButton({ concepts }: { concepts: Concept[] }) {
   const [open, setOpen] = useState(false);
 
   async function handleSave(formData: FormData) {
@@ -262,7 +319,7 @@ function AddButton() {
           <div className="absolute inset-0 bg-black/20" onClick={() => setOpen(false)} />
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6">
             <h2 className="font-semibold text-nrg-charcoal text-lg mb-5">Add Document</h2>
-            <DocForm onSave={handleSave} onCancel={() => setOpen(false)} />
+            <DocForm concepts={concepts} onSave={handleSave} onCancel={() => setOpen(false)} />
           </div>
         </div>
       )}
@@ -270,7 +327,7 @@ function AddButton() {
   );
 }
 
-export default function ManageClient({ documents }: { documents: Doc[] }) {
+export default function ManageClient({ documents, concepts }: { documents: Doc[]; concepts: Concept[] }) {
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -381,6 +438,7 @@ export default function ManageClient({ documents }: { documents: Doc[] }) {
               <h2 className="font-semibold text-nrg-charcoal text-lg mb-5">Edit Document</h2>
               <DocForm
                 doc={doc}
+                concepts={concepts}
                 onSave={(fd) => handleUpdate(doc.id, fd)}
                 onCancel={() => setEditingId(null)}
               />

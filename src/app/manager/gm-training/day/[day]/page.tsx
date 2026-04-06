@@ -1,3 +1,4 @@
+import React from "react";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -8,6 +9,33 @@ import SignOff from "@/components/modules/SignOff";
 import Quiz from "@/components/modules/Quiz";
 
 export const dynamic = "force-dynamic";
+
+function MarkdownContent({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <div className="space-y-1">
+      {lines.map((line, i) => {
+        if (line.startsWith("## ")) return <h3 key={i} className="font-bold text-nrg-charcoal text-base mt-3 mb-1">{line.slice(3)}</h3>;
+        if (line.startsWith("# ")) return <h2 key={i} className="font-bold text-nrg-charcoal text-lg mt-3 mb-1">{line.slice(2)}</h2>;
+        if (line.startsWith("- ") || line.startsWith("• ")) return <li key={i} className="ml-4 list-disc text-sm">{renderInline(line.slice(2))}</li>;
+        if (line.trim() === "") return <div key={i} className="h-2" />;
+        return <p key={i} className="text-sm leading-relaxed">{renderInline(line)}</p>;
+      })}
+    </div>
+  );
+}
+
+function renderInline(text: string): React.ReactNode {
+  // Handle [text](url) links and **bold**
+  const parts = text.split(/(\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*)/g);
+  return parts.map((part, i) => {
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) return <a key={i} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-nrg-green hover:underline">{linkMatch[1]}</a>;
+    const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>;
+    return part;
+  });
+}
 
 function toEmbedUrl(url: string): string {
   // YouTube: watch?v=ID or youtu.be/ID
@@ -102,6 +130,14 @@ export default async function ModulePage({ params }: { params: Promise<{ day: st
         )}
       </div>
 
+      {mod.content && (
+        <section className="mb-6">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 prose prose-sm max-w-none text-gray-700">
+            <MarkdownContent text={mod.content} />
+          </div>
+        </section>
+      )}
+
       {mod.video_url && (
         <section className="mb-6">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
@@ -115,6 +151,24 @@ export default async function ModulePage({ params }: { params: Promise<{ day: st
               allowFullScreen
             />
           </div>
+        </section>
+      )}
+
+      {mod.pdf_url && (
+        <section className="mb-6">
+          <a
+            href={mod.pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 hover:border-nrg-green transition group"
+          >
+            <span className="text-2xl">📄</span>
+            <div>
+              <p className="text-sm font-medium text-nrg-charcoal group-hover:text-nrg-green transition">View Reference Document</p>
+              <p className="text-xs text-gray-400 mt-0.5">Opens PDF in new tab</p>
+            </div>
+            <span className="ml-auto text-nrg-green text-sm">↗</span>
+          </a>
         </section>
       )}
 

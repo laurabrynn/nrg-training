@@ -12,6 +12,17 @@ async function assertAdmin() {
   if (role !== "do" && role !== "corporate") throw new Error("Unauthorized");
 }
 
+async function maybeUploadPdf(formData: FormData, admin: ReturnType<typeof createAdminClient>): Promise<string | null> {
+  const file = formData.get("pdf_file") as File | null;
+  if (!file || file.size === 0) return null;
+  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const bytes = await file.arrayBuffer();
+  const { error } = await admin.storage.from("documents").upload(path, bytes, { contentType: file.type || "application/pdf" });
+  if (error) throw error;
+  const { data: { publicUrl } } = admin.storage.from("documents").getPublicUrl(path);
+  return publicUrl;
+}
+
 export async function createDocument(formData: FormData) {
   await assertAdmin();
   const admin = createAdminClient();
@@ -21,6 +32,7 @@ export async function createDocument(formData: FormData) {
   const category = formData.get("category") as string;
   const category_label = formData.get("category_label") as string;
   const states = formData.getAll("applicable_states") as string[];
+  const fileUrl = await maybeUploadPdf(formData, admin);
 
   await admin.from("knowledge_documents").insert({
     title,
@@ -29,6 +41,7 @@ export async function createDocument(formData: FormData) {
     category_label,
     applicable_states: states.length > 0 ? states : ["dc", "va", "md", "la"],
     source: "manual",
+    ...(fileUrl ? { file_url: fileUrl } : {}),
   });
 
   revalidatePath("/admin/resources");
@@ -45,6 +58,7 @@ export async function updateDocument(id: string, formData: FormData) {
   const category = formData.get("category") as string;
   const category_label = formData.get("category_label") as string;
   const states = formData.getAll("applicable_states") as string[];
+  const fileUrl = await maybeUploadPdf(formData, admin);
 
   await admin.from("knowledge_documents").update({
     title,
@@ -52,6 +66,7 @@ export async function updateDocument(id: string, formData: FormData) {
     category,
     category_label,
     applicable_states: states.length > 0 ? states : ["dc", "va", "md", "la"],
+    ...(fileUrl ? { file_url: fileUrl } : {}),
   }).eq("id", id);
 
   revalidatePath("/admin/resources");

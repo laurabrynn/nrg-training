@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   updateModule,
+  uploadModulePdf,
   addTask,
   updateTask,
   deleteTask,
@@ -20,7 +21,7 @@ type Question = {
   explanation: string;
   sort_order: number;
 };
-type Mod = { id: string; day: number; title: string; focus: string; video_url: string | null };
+type Mod = { id: string; day: number; title: string; focus: string; video_url: string | null; content: string | null; pdf_url: string | null };
 
 export default function ModuleEditor({
   mod,
@@ -38,6 +39,9 @@ export default function ModuleEditor({
   const [headerTitle, setHeaderTitle] = useState(mod.title);
   const [headerFocus, setHeaderFocus] = useState(mod.focus);
   const [headerVideo, setHeaderVideo] = useState(mod.video_url ?? "");
+  const [headerContent, setHeaderContent] = useState(mod.content ?? "");
+  const [headerPdfUrl, setHeaderPdfUrl] = useState(mod.pdf_url ?? "");
+  const [pdfUploading, setPdfUploading] = useState(false);
 
   // Task state
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -108,7 +112,17 @@ export default function ModuleEditor({
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500 mb-1 block">Video URL (YouTube, Vimeo, or direct link)</label>
+              <label className="text-xs text-gray-500 mb-1 block">Body Content (markdown supported — use [text](url) for links)</label>
+              <textarea
+                value={headerContent}
+                onChange={(e) => setHeaderContent(e.target.value)}
+                rows={6}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-y font-mono"
+                placeholder="Add context, SOPs, important links, or notes for this module..."
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Video URL (YouTube or Vimeo)</label>
               <input
                 value={headerVideo}
                 onChange={(e) => setHeaderVideo(e.target.value)}
@@ -116,12 +130,50 @@ export default function ModuleEditor({
                 placeholder="https://www.youtube.com/watch?v=..."
               />
             </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">PDF</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  value={headerPdfUrl}
+                  onChange={(e) => setHeaderPdfUrl(e.target.value)}
+                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                  placeholder="Paste PDF URL or upload below"
+                />
+                <label className={`text-xs rounded-lg px-3 py-2 border cursor-pointer transition whitespace-nowrap ${pdfUploading ? "opacity-50" : "border-nrg-green text-nrg-green hover:bg-nrg-green/5"}`}>
+                  {pdfUploading ? "Uploading..." : "Upload PDF"}
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    disabled={pdfUploading}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setPdfUploading(true);
+                      try {
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const url = await uploadModulePdf(mod.id, fd);
+                        setHeaderPdfUrl(url);
+                      } finally {
+                        setPdfUploading(false);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {headerPdfUrl && (
+                <a href={headerPdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline mt-1 inline-block">
+                  View current PDF ↗
+                </a>
+              )}
+            </div>
             <div className="flex gap-2">
               <button
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
-                    await updateModule(mod.id, headerTitle, headerFocus, headerVideo);
+                    await updateModule(mod.id, headerTitle, headerFocus, headerVideo, headerContent, headerPdfUrl);
                     setEditingHeader(false);
                   });
                 }}
@@ -130,7 +182,14 @@ export default function ModuleEditor({
                 Save
               </button>
               <button
-                onClick={() => { setHeaderTitle(mod.title); setHeaderFocus(mod.focus); setHeaderVideo(mod.video_url ?? ""); setEditingHeader(false); }}
+                onClick={() => {
+                  setHeaderTitle(mod.title);
+                  setHeaderFocus(mod.focus);
+                  setHeaderVideo(mod.video_url ?? "");
+                  setHeaderContent(mod.content ?? "");
+                  setHeaderPdfUrl(mod.pdf_url ?? "");
+                  setEditingHeader(false);
+                }}
                 className="text-xs text-gray-400 hover:text-gray-600 px-3 py-2"
               >
                 Cancel
@@ -141,9 +200,17 @@ export default function ModuleEditor({
           <div>
             <p className="font-medium text-nrg-charcoal">Day {mod.day}: {mod.title}</p>
             <p className="text-sm text-gray-500 mt-1">{mod.focus}</p>
-            {mod.video_url && (
-              <p className="text-xs text-nrg-green mt-1 truncate">Video: {mod.video_url}</p>
+            {mod.content && (
+              <p className="text-xs text-gray-400 mt-1 line-clamp-2">{mod.content.slice(0, 120)}{mod.content.length > 120 ? "…" : ""}</p>
             )}
+            <div className="flex gap-3 mt-1">
+              {mod.video_url && (
+                <p className="text-xs text-nrg-green truncate">📹 Video attached</p>
+              )}
+              {mod.pdf_url && (
+                <a href={mod.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline">📄 PDF attached ↗</a>
+              )}
+            </div>
           </div>
         )}
       </div>

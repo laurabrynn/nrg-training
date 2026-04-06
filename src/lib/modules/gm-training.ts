@@ -16,6 +16,8 @@ export interface GmModule {
   title: string;
   focus: string;
   video_url?: string | null;
+  content?: string | null;
+  pdf_url?: string | null;
   tasks: ModuleTask[];
   quiz: QuizQuestion[];
 }

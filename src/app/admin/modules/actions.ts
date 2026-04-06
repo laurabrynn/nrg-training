@@ -10,12 +10,50 @@ async function assertAdmin() {
   if (role !== "corporate" && role !== "do") throw new Error("Unauthorized");
 }
 
-export async function updateModule(id: string, title: string, focus: string, videoUrl: string) {
+export async function updateModule(
+  id: string,
+  title: string,
+  focus: string,
+  videoUrl: string,
+  content: string,
+  pdfUrl: string,
+) {
   await assertAdmin();
   const admin = createAdminClient();
-  await admin.from("gm_modules").update({ title, focus, video_url: videoUrl || null }).eq("id", id);
+  await admin.from("gm_modules").update({
+    title,
+    focus,
+    video_url: videoUrl || null,
+    content: content || null,
+    pdf_url: pdfUrl || null,
+  }).eq("id", id);
   revalidatePath("/admin/modules");
   revalidatePath("/manager/gm-training");
+}
+
+export async function uploadModulePdf(moduleId: string, formData: FormData) {
+  await assertAdmin();
+  const admin = createAdminClient();
+
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) throw new Error("No file provided");
+
+  const path = `modules/${moduleId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const bytes = await file.arrayBuffer();
+
+  const { error: uploadError } = await admin.storage
+    .from("documents")
+    .upload(path, bytes, { contentType: file.type || "application/pdf" });
+
+  if (uploadError) throw uploadError;
+
+  const { data: { publicUrl } } = admin.storage.from("documents").getPublicUrl(path);
+
+  await admin.from("gm_modules").update({ pdf_url: publicUrl }).eq("id", moduleId);
+  revalidatePath("/admin/modules");
+  revalidatePath("/manager/gm-training");
+
+  return publicUrl;
 }
 
 export async function addTask(moduleId: string, text: string, duration: string) {

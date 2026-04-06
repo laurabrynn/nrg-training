@@ -1,6 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import React from "react";
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*)/g);
+  return parts.map((part, i) => {
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) return <a key={i} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-nrg-green underline hover:opacity-80">{linkMatch[1]}</a>;
+    const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+    if (boldMatch) return <strong key={i}>{boldMatch[1]}</strong>;
+    return part;
+  });
+}
+
+function MarkdownContent({ text }: { text: string }) {
+  const lines = text.split("\n");
+  return (
+    <div className="space-y-1">
+      {lines.map((line, i) => {
+        if (line.startsWith("## ")) return <h3 key={i} className="font-bold text-nrg-charcoal text-sm mt-3 mb-1">{line.slice(3)}</h3>;
+        if (line.startsWith("# ")) return <h2 key={i} className="font-bold text-nrg-charcoal text-base mt-3 mb-1">{line.slice(2)}</h2>;
+        if (line.startsWith("- ") || line.startsWith("• ")) return <li key={i} className="ml-4 list-disc text-sm">{renderInline(line.slice(2))}</li>;
+        if (line.trim() === "") return <div key={i} className="h-1.5" />;
+        return <p key={i} className="text-sm leading-relaxed">{renderInline(line)}</p>;
+      })}
+    </div>
+  );
+}
 
 interface Doc {
   id: string;
@@ -181,9 +208,7 @@ export default function ResourcesClient({ groups }: Props) {
                 </a>
               )}
               {openDoc.content ? (
-                <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
-                  {openDoc.content}
-                </div>
+                <MarkdownContent text={openDoc.content} />
               ) : !openDoc.file_url ? (
                 <p className="text-sm text-gray-400 italic">
                   This resource references an attached document. Check the NRG Playbook on Trello for the full content.
