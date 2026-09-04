@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
       colors: {
         nrg: {
-          green: "#2D5016",
+          green: "#7B1A1A",
           gold: "#C4922A",
           cream: "#FAF6EE",
           charcoal: "#2C2C2C",
