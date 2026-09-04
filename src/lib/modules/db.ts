@@ -20,7 +20,12 @@ export async function getModulesFromDB(): Promise<GmModule[]> {
     pdf_url: mod.pdf_url ?? null,
     tasks: (tasks ?? [])
       .filter((t) => t.module_id === mod.id)
-      .map((t): ModuleTask => ({ text: t.text, duration: t.duration ?? undefined })),
+      .map((t): ModuleTask => ({
+          text: t.text,
+          duration: t.duration ?? undefined,
+          link_url: t.link_url ?? null,
+          file_url: t.file_url ?? null,
+        })),
     quiz: (questions ?? [])
       .filter((q) => q.module_id === mod.id)
       .map((q): QuizQuestion => ({

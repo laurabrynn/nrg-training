@@ -56,7 +56,7 @@ export async function uploadModulePdf(moduleId: string, formData: FormData) {
   return publicUrl;
 }
 
-export async function addTask(moduleId: string, text: string, duration: string) {
+export async function addTask(moduleId: string, text: string, duration: string, linkUrl: string, fileUrl: string) {
   await assertAdmin();
   const admin = createAdminClient();
   const { data: existing } = await admin
@@ -70,18 +70,41 @@ export async function addTask(moduleId: string, text: string, duration: string) 
     module_id: moduleId,
     text,
     duration: duration || null,
+    link_url: linkUrl || null,
+    file_url: fileUrl || null,
     sort_order: nextOrder,
   });
   revalidatePath("/admin/modules");
   revalidatePath("/manager/gm-training");
 }
 
-export async function updateTask(id: string, text: string, duration: string) {
+export async function updateTask(id: string, text: string, duration: string, linkUrl: string, fileUrl: string) {
   await assertAdmin();
   const admin = createAdminClient();
-  await admin.from("gm_module_tasks").update({ text, duration: duration || null }).eq("id", id);
+  await admin.from("gm_module_tasks").update({
+    text,
+    duration: duration || null,
+    link_url: linkUrl || null,
+    file_url: fileUrl || null,
+  }).eq("id", id);
   revalidatePath("/admin/modules");
   revalidatePath("/manager/gm-training");
+}
+
+export async function uploadTaskPdf(taskId: string, formData: FormData): Promise<string> {
+  await assertAdmin();
+  const admin = createAdminClient();
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) throw new Error("No file provided");
+  const path = `tasks/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+  const bytes = await file.arrayBuffer();
+  const { error } = await admin.storage.from("documents").upload(path, bytes, { contentType: file.type || "application/pdf" });
+  if (error) throw error;
+  const { data: { publicUrl } } = admin.storage.from("documents").getPublicUrl(path);
+  await admin.from("gm_module_tasks").update({ file_url: publicUrl }).eq("id", taskId);
+  revalidatePath("/admin/modules");
+  revalidatePath("/manager/gm-training");
+  return publicUrl;
 }
 
 export async function deleteTask(id: string) {

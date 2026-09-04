@@ -7,12 +7,13 @@ import {
   addTask,
   updateTask,
   deleteTask,
+  uploadTaskPdf,
   addQuestion,
   updateQuestion,
   deleteQuestion,
 } from "../actions";
 
-type Task = { id: string; text: string; duration: string | null; sort_order: number };
+type Task = { id: string; text: string; duration: string | null; link_url: string | null; file_url: string | null; sort_order: number };
 type Question = {
   id: string;
   question: string;
@@ -47,9 +48,15 @@ export default function ModuleEditor({
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [taskText, setTaskText] = useState("");
   const [taskDuration, setTaskDuration] = useState("");
+  const [taskLinkUrl, setTaskLinkUrl] = useState("");
+  const [taskFileUrl, setTaskFileUrl] = useState("");
+  const [taskPdfUploading, setTaskPdfUploading] = useState(false);
   const [addingTask, setAddingTask] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
   const [newTaskDuration, setNewTaskDuration] = useState("");
+  const [newTaskLinkUrl, setNewTaskLinkUrl] = useState("");
+  const [newTaskFileUrl, setNewTaskFileUrl] = useState("");
+  const [newTaskPdfUploading, setNewTaskPdfUploading] = useState(false);
 
   // Question state
   const [editingQId, setEditingQId] = useState<string | null>(null);
@@ -67,6 +74,8 @@ export default function ModuleEditor({
     setEditingTaskId(t.id);
     setTaskText(t.text);
     setTaskDuration(t.duration ?? "");
+    setTaskLinkUrl(t.link_url ?? "");
+    setTaskFileUrl(t.file_url ?? "");
   }
 
   function startEditQuestion(q: Question) {
@@ -244,11 +253,44 @@ export default function ModuleEditor({
                     className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
                     placeholder="Duration (optional, e.g. 30 min)"
                   />
+                  <input
+                    value={taskLinkUrl}
+                    onChange={(e) => setTaskLinkUrl(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
+                    placeholder="Link URL (optional, e.g. https://...)"
+                  />
+                  <div className="flex gap-2 items-center">
+                    <input
+                      value={taskFileUrl}
+                      onChange={(e) => setTaskFileUrl(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
+                      placeholder="PDF URL (or upload)"
+                    />
+                    <label className={`text-xs rounded-lg px-3 py-1.5 border cursor-pointer transition whitespace-nowrap ${taskPdfUploading ? "opacity-50" : "border-nrg-green text-nrg-green hover:bg-nrg-green/5"}`}>
+                      {taskPdfUploading ? "Uploading…" : "Upload PDF"}
+                      <input type="file" accept=".pdf" className="hidden" disabled={taskPdfUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setTaskPdfUploading(true);
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
+                            const url = await uploadTaskPdf(t.id, fd);
+                            setTaskFileUrl(url);
+                          } finally { setTaskPdfUploading(false); }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {taskFileUrl && (
+                    <a href={taskFileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline">View current PDF ↗</a>
+                  )}
                   <div className="flex gap-2">
                     <button
                       disabled={isPending}
                       onClick={() => startTransition(async () => {
-                        await updateTask(t.id, taskText, taskDuration);
+                        await updateTask(t.id, taskText, taskDuration, taskLinkUrl, taskFileUrl);
                         setEditingTaskId(null);
                       })}
                       className="bg-nrg-green text-white text-xs rounded-lg px-3 py-1.5 hover:opacity-90 disabled:opacity-50"
@@ -281,6 +323,10 @@ export default function ModuleEditor({
                   <div>
                     <p className="text-sm text-nrg-charcoal">{t.text}</p>
                     {t.duration && <p className="text-xs text-gray-400 mt-0.5">{t.duration}</p>}
+                    <div className="flex gap-3 mt-1">
+                      {t.link_url && <a href={t.link_url} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline">🔗 Link ↗</a>}
+                      {t.file_url && <a href={t.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-nrg-green hover:underline">📄 PDF ↗</a>}
+                    </div>
                   </div>
                   <button
                     onClick={() => startEditTask(t)}
@@ -308,13 +354,22 @@ export default function ModuleEditor({
                 className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
                 placeholder="Duration (optional, e.g. 30 min)"
               />
+              <input
+                value={newTaskLinkUrl}
+                onChange={(e) => setNewTaskLinkUrl(e.target.value)}
+                className="w-full border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
+                placeholder="Link URL (optional, e.g. https://...)"
+              />
+              <p className="text-xs text-gray-400">PDF can be added after saving the task.</p>
               <div className="flex gap-2">
                 <button
                   disabled={isPending || !newTaskText.trim()}
                   onClick={() => startTransition(async () => {
-                    await addTask(mod.id, newTaskText, newTaskDuration);
+                    await addTask(mod.id, newTaskText, newTaskDuration, newTaskLinkUrl, newTaskFileUrl);
                     setNewTaskText("");
                     setNewTaskDuration("");
+                    setNewTaskLinkUrl("");
+                    setNewTaskFileUrl("");
                     setAddingTask(false);
                   })}
                   className="bg-nrg-green text-white text-xs rounded-lg px-3 py-1.5 hover:opacity-90 disabled:opacity-50"
@@ -322,7 +377,7 @@ export default function ModuleEditor({
                   Add
                 </button>
                 <button
-                  onClick={() => { setAddingTask(false); setNewTaskText(""); setNewTaskDuration(""); }}
+                  onClick={() => { setAddingTask(false); setNewTaskText(""); setNewTaskDuration(""); setNewTaskLinkUrl(""); setNewTaskFileUrl(""); }}
                   className="text-xs text-gray-400 hover:text-gray-600 px-2"
                 >
                   Cancel

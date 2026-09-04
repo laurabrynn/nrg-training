@@ -65,7 +65,7 @@ export default function TaskChecklist({ userId, moduleId, tasks, completedTasks,
 
       <ul className="divide-y divide-gray-50">
         {tasks.map((task, i) => (
-          <li key={i}>
+          <li key={i} className="flex flex-col">
             <button
               onClick={() => toggle(i)}
               disabled={isPending}
@@ -91,6 +91,32 @@ export default function TaskChecklist({ userId, moduleId, tasks, completedTasks,
                 )}
               </span>
             </button>
+            {(task.link_url || task.file_url) && (
+              <div className="flex gap-3 px-6 pb-3 -mt-1">
+                {task.link_url && (
+                  <a
+                    href={task.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-nrg-green hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    🔗 Open link ↗
+                  </a>
+                )}
+                {task.file_url && (
+                  <a
+                    href={task.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-nrg-green hover:underline font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    📄 View PDF ↗
+                  </a>
+                )}
+              </div>
+            )}
           </li>
         ))}
       </ul>

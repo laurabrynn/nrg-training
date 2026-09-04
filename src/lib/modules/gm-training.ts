@@ -1,6 +1,8 @@
 export interface ModuleTask {
   text: string;
   duration?: string;
+  link_url?: string | null;
+  file_url?: string | null;
 }
 
 export interface QuizQuestion {
