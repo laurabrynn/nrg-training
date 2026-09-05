@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -57,9 +58,10 @@ export default async function ConceptsPage() {
             </h2>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {byState.get(state)!.map((concept, i, arr) => (
-                <div
+                <Link
                   key={concept.id}
-                  className={`flex items-center justify-between px-5 py-3.5 ${
+                  href={`/admin/concepts/${concept.slug}`}
+                  className={`flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition ${
                     i < arr.length - 1 ? "border-b border-gray-50" : ""
                   }`}
                 >
@@ -70,20 +72,14 @@ export default async function ConceptsPage() {
                       <span className="text-xs text-gray-400 font-mono">{concept.slug}</span>
                     )}
                   </div>
-                  {!concept.active && (
-                    <span className="text-xs text-gray-400 bg-gray-50 rounded-full px-2 py-0.5">Inactive</span>
-                  )}
-                </div>
+                  <span className="text-xs text-nrg-gold">Manage →</span>
+                </Link>
               ))}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700">
-        <p className="font-medium mb-1">Coming in V2</p>
-        <p className="text-blue-600">Concepts will be used to scope training modules (universal vs. concept-specific) and assign staff to their home restaurant. For now this is a reference list.</p>
-      </div>
     </div>
   );
 }

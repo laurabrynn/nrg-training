@@ -7,10 +7,11 @@ import { saveQuizAttempt } from "@/app/actions/quiz";
 interface Props {
   moduleId: string;
   questions: QuizQuestion[];
-  bestScore: number | null; // 0–100 from previous attempts
+  bestScore: number | null;
+  attemptsTable?: string;
 }
 
-export default function Quiz({ moduleId, questions, bestScore }: Props) {
+export default function Quiz({ moduleId, questions, bestScore, attemptsTable = "quiz_attempts" }: Props) {
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -38,7 +39,7 @@ export default function Quiz({ moduleId, questions, bestScore }: Props) {
       const correct = answers.filter((a, i) => a === questions[i].correctIndex).length;
       const score = Math.round((correct / questions.length) * 100);
       startTransition(async () => {
-        await saveQuizAttempt(moduleId, score, correct, questions.length);
+        await saveQuizAttempt(moduleId, score, correct, questions.length, attemptsTable);
       });
       setFinished(true);
     }

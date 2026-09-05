@@ -7,9 +7,10 @@ interface Props {
   userId: string;
   moduleId: string;
   initialNotes: string;
+  progressTable?: string;
 }
 
-export default function ModuleNotes({ userId, moduleId, initialNotes }: Props) {
+export default function ModuleNotes({ userId, moduleId, initialNotes, progressTable = "module_progress" }: Props) {
   const [notes, setNotes] = useState(initialNotes);
   const [saved, setSaved] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -24,7 +25,7 @@ export default function ModuleNotes({ userId, moduleId, initialNotes }: Props) {
     debounceRef.current = setTimeout(() => {
       startTransition(async () => {
         await supabase
-          .from("module_progress")
+          .from(progressTable)
           .upsert(
             { user_id: userId, module_id: moduleId, notes: value, updated_at: new Date().toISOString() },
             { onConflict: "user_id,module_id" }

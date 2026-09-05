@@ -7,6 +7,12 @@
       "runtimeArgs": ["-c", "export PATH=/usr/local/bin:$PATH && npm run dev"],
       "port": 3000,
       "autoPort": false
+    },
+    {
+      "name": "neighborly",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "export PATH=/usr/local/bin:$PATH && cd /Users/laura-brynnneuhoff/Desktop/neighborly && npm run dev -- -p 3001"],
+      "port": 3001
     }
   ]
 }

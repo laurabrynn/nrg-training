@@ -11,6 +11,7 @@ interface Props {
   signedOffAt: string | null;
   completedTaskCount: number;
   totalTaskCount: number;
+  progressTable?: string;
 }
 
 export default function SignOff({
@@ -21,6 +22,7 @@ export default function SignOff({
   signedOffAt,
   completedTaskCount,
   totalTaskCount,
+  progressTable = "module_progress",
 }: Props) {
   const [complete, setComplete] = useState(isComplete);
   const [signed, setSigned] = useState(signedOff);
@@ -31,7 +33,7 @@ export default function SignOff({
   async function markComplete() {
     startTransition(async () => {
       const now = new Date().toISOString();
-      await supabase.from("module_progress").upsert(
+      await supabase.from(progressTable).upsert(
         { user_id: userId, module_id: moduleId, completed_at: now, updated_at: now },
         { onConflict: "user_id,module_id" }
       );
@@ -44,7 +46,7 @@ export default function SignOff({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const now = new Date().toISOString();
-      await supabase.from("module_progress").upsert(
+      await supabase.from(progressTable).upsert(
         {
           user_id: userId,
           module_id: moduleId,

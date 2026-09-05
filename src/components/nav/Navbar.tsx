@@ -19,6 +19,7 @@ const traineeNav: NavItem[] = [
 const managerNav: NavItem[] = [
   { label: "Home", href: "/manager" },
   { label: "GM Training", href: "/manager/gm-training" },
+  { label: "Property Training", href: "/manager/property-training" },
   { label: "Resources", href: "/manager/resources" },
   { label: "Ask NRG", href: "/manager/chat" },
   { label: "Staff", href: "/manager/staff" },

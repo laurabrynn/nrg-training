@@ -10,9 +10,10 @@ interface Props {
   tasks: ModuleTask[];
   completedTasks: Set<number>;
   isComplete: boolean;
+  progressTable?: string;
 }
 
-export default function TaskChecklist({ userId, moduleId, tasks, completedTasks, isComplete }: Props) {
+export default function TaskChecklist({ userId, moduleId, tasks, completedTasks, isComplete, progressTable = "module_task_completions" }: Props) {
   const [checked, setChecked] = useState<Set<number>>(completedTasks);
   const [isPending, startTransition] = useTransition();
   const supabase = createClient();
@@ -30,14 +31,14 @@ export default function TaskChecklist({ userId, moduleId, tasks, completedTasks,
     startTransition(async () => {
       if (nowChecked) {
         await supabase
-          .from("module_task_completions")
+          .from(progressTable)
           .delete()
           .eq("user_id", userId)
           .eq("module_id", moduleId)
           .eq("task_index", index);
       } else {
         await supabase
-          .from("module_task_completions")
+          .from(progressTable)
           .upsert({ user_id: userId, module_id: moduleId, task_index: index });
       }
     });
