@@ -22,7 +22,7 @@ export default async function ManagerLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar role="manager" userName={userName} />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">{children}</main>
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 pt-6 pb-24 sm:pt-8 sm:pb-10">{children}</main>
     </div>
   );
 }

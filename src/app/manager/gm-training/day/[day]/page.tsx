@@ -110,24 +110,24 @@ export default async function ModulePage({ params }: { params: Promise<{ day: st
         <span className="flex-shrink-0 w-12 h-12 rounded-full bg-nrg-green text-white text-lg font-bold flex items-center justify-center">
           {mod.day}
         </span>
-        <div>
-          <h1 className="text-2xl font-bold text-nrg-charcoal">{mod.title}</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-nrg-charcoal">{mod.title}</h1>
           <p className="text-gray-500 text-sm mt-1">{mod.focus}</p>
+          {(isComplete || signedOff) && (
+            <div className="flex gap-2 mt-2 flex-wrap">
+              {isComplete && (
+                <span className="text-xs bg-green-100 text-green-700 rounded-full px-3 py-1 font-medium">
+                  Completed
+                </span>
+              )}
+              {signedOff && (
+                <span className="text-xs bg-nrg-gold/15 text-nrg-gold rounded-full px-3 py-1 font-medium">
+                  Signed off
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        {(isComplete || signedOff) && (
-          <div className="ml-auto flex flex-col items-end gap-1">
-            {isComplete && (
-              <span className="text-xs bg-green-100 text-green-700 rounded-full px-3 py-1 font-medium">
-                Completed
-              </span>
-            )}
-            {signedOff && (
-              <span className="text-xs bg-nrg-gold/15 text-nrg-gold rounded-full px-3 py-1 font-medium">
-                Signed off
-              </span>
-            )}
-          </div>
-        )}
       </div>
 
       {mod.content && (
